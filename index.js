@@ -33,6 +33,7 @@ function getParentName(item, separator) {
  * @param {Object} newman - The collection run object, with a event handler setter, used to enable event wise reporting.
  * @param {Object} reporterOptions - A set of JUnit reporter run options.
  * @param {String=} reporterOptions.export - Optional custom path to create the XML report at.
+ * @param {String=} reporterOptions.labels - Optional labels for tests.
  * @returns {*}
  */
 JunitXrayReporter = function(newman, reporterOptions) {
@@ -99,6 +100,21 @@ JunitXrayReporter = function(newman, reporterOptions) {
 
             //testcase.att("name", currentItem.item.name);
             testcase.att("name", currentItem.name);
+
+            // Properties element
+            const properties = testcase.ele("properties");
+
+            // Description
+            const desc = _.get(currentItem, "request.description.content");
+            if(!!desc) {
+                properties.ele("property", {"name": "test_description"}, desc);
+            }
+
+            // Labels
+            const labelsArray = reporterOptions.labels;
+            if (Array.isArray(labelsArray)) {
+                properties.ele("property", {"name": "tags", "value": reporterOptions.labels.join(",")});
+            }
 
             // Process assertion errors(testcases)
             _.forEach(executions, function(testExecution) {
